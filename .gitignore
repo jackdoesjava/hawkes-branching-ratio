@@ -7,6 +7,9 @@ data/raw/*.dbn
 # Decoded DBN cache, 1.6 GB, rebuilt on demand by hawkes_fomc.data.load_mbp10
 data/processed/
 
+# Console output from ad-hoc runs; run_all.py prints to stdout and the CSVs hold the results
+results/*.log
+
 __pycache__/
 *.py[cod]
 .pytest_cache/
