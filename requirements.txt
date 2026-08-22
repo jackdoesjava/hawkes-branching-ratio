@@ -1,0 +1,8 @@
+numpy>=2.0
+scipy>=1.14
+pandas>=2.2
+matplotlib>=3.9
+numba>=0.61
+torch>=2.4
+databento>=0.40
+pytest>=8
