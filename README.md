@@ -78,26 +78,28 @@ closed-form exponential kernel to about 1e-4 relative on n. Training is Adam the
 
 All of this is in `results/` and regenerates with `python run_all.py`.
 
-The estimator works where the model is right. Across 6300 fits on simulated data with known n, the
-fixed-grid MLE recovers n to within about 0.01 for exponential and on-grid mixture kernels at
-n = 0.3, 0.6 and 0.9, with 95% interval coverage between 0.86 and 0.98.
+The estimator works where the model is right. Across 6300 fits on simulated data with known n, at
+n = 0.3, 0.6 and 0.9, the fixed grid with a spline baseline has a bias between -0.018 and +0.010,
+and with a constant baseline between -0.002 and +0.038. Interval coverage runs from 0.86 to 1.00.
+The constant-baseline bias is the non-negativity effect described below, not noise.
 
 The failures are more interesting.
 
 **Baseline and slow kernel are the same thing.** I originally had a comment in `config.py` claiming
 the 10-second component was fast enough compared to the 2-minute baseline knots that the two could
-not compete. That was wrong. Given a true 10-second component carrying mass 0.30, the recovered slow
-mass is 0.22 under a constant baseline, 0.11 under 120-second knots, and 0.00 under 30-second knots.
-Even with the true decays known, a 10-second component in a 10-minute window is biased by -0.056,
-and needs roughly 40 minutes of data before it comes within 0.015. So the gap between the constant
-and spline estimates is not a nuisance to be resolved, it is the genuine ambiguity between slow
-self-excitation and a drifting exogenous rate. Both numbers appear in every result.
+not compete. That was wrong. In the `slow_component_const_mu` stress scenario the truth carries mass
+0.30 on a 10-second component; the mass recovered on grid components slower than 1 second is 0.23
+under a constant baseline, 0.13 under 2-minute knots and 0.04 under 1-minute knots. The flexible
+baseline eats it. So the gap between the constant and spline estimates is not a nuisance to be
+resolved, it is the genuine ambiguity between slow self-excitation and a drifting exogenous rate,
+and both numbers appear in every result.
 
 **Bursts get through.** A smoothly varying exogenous rate pushes a constant-baseline fit to 0.96
-when the truth is 0.30, and the spline baseline pulls it back to 0.32. A mid-window step is fixed
-too. But 30-second bursts are not: both baselines return about 0.86 against a truth of 0.30, because
-2-minute pieces cannot follow them. An announcement is a burst, so this is the biggest threat to any
-FOMC-day claim and nothing at this resolution defends against it.
+when the truth is 0.30, and the spline baseline pulls it back to 0.32. A mid-window step is mostly
+absorbed too, leaving +0.05 at 2-minute knots and +0.01 at 1-minute knots. But 30-second bursts are
+not: every baseline returns about 0.86 against a truth of 0.30, because even 1-minute pieces cannot
+follow them. An announcement is a burst, so this is the biggest threat to any FOMC-day claim and
+nothing at this resolution defends against it.
 
 **Precision comes from window length, not event count.** With the true decay known, the SD of n at
 n = 0.3 is 0.042, 0.032 and 0.035 for 500, 2000 and 5000 events in a 10-minute window. Ten times the
@@ -117,17 +119,18 @@ report it instead because it is the same size as the differences this day produc
 fixes both.
 
 **Misspecification is asymmetric.** A single exponential fitted to a multi-scale kernel understates n
-by 0.08 to 0.17 and fails KS in every window past about 2000 events. A power-law truth with most of
-its mass beyond the window is recovered as its within-window mass, which is the right answer to a
-different question.
+by 0.05 to 0.17, and once n is 0.6 or above it fails KS in essentially every window past 2000 events.
+A power-law truth whose total mass is 0.71, of which 0.45 falls inside 10 seconds, is recovered as
+0.45 by the constant-baseline grid: the right answer to a narrower question than the one asked.
 
 **Near criticality the MLE is biased low**, -0.005 at n = 0.95 and -0.038 at n = 0.99.
 
 **n is a bad diagnostic of timestamp quality.** Rounding the real trade times to one second and
 re-jittering uniformly inside each second destroys the whole microstructure, and n moves from 0.680
 to 0.691. Everything else falls apart: the kernel abandons the 10 microsecond to 10 second range and
-puts 0.505 of its mass on a single 0.3-second component (the jitter scale itself), and the held-out
-gain over Poisson drops from 1.42 to 0.26 nats per event. This is the Filimonov-Sornette rounding
+puts mass 0.505 out of 0.691, nearly three quarters of the kernel, on a single 0.3-second component,
+which is just the jitter scale, and the held-out kernel-only gain over Poisson
+(`heldout_gain_kernel_only`) drops from 1.42 to 0.26 nats per event. This is the Filimonov-Sornette rounding
 artefact from the inside. A stable n across timestamp treatments is not evidence the timestamps are
 fine.
 
@@ -136,9 +139,9 @@ fine.
 See `docs/findings.md` for the write-up. Short version: comparing 14:00-14:30 against the half hour
 before it gives a rise of about +0.20, and comparing the same window against the whole morning gives
 about +0.06, which is nothing. The two disagree because 13:30-14:00 is the bottom of the daily
-activity trough, so anchoring there manufactures a 14:00 spike on a day when nothing happened. With
-three non-overlapping windows per 30-minute period there is essentially no power anyway: a
-permutation test cannot reach p < 0.05 at any effect size.
+activity trough, so anchoring there manufactures a 14:00 spike on a day when nothing happened. The
+14:00-versus-pre comparison has three non-overlapping windows on each side, so a two-sided
+permutation test cannot get below p = 0.1 at any effect size; there is no power to speak of.
 
 ## Things that are handled
 
