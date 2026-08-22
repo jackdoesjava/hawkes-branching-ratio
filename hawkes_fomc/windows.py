@@ -113,7 +113,9 @@ def fit_and_score(
     next_length = window.length if next_length is None else next_length
     next_window = Window(window.t1, window.t1 + next_length)
     next_times = stream.between(next_window.t0, next_window.t1)
-    if len(next_times) and next_window.t1 <= stream.times[-1]:
+    # The stream spans the whole ITCH file, not just the session, so the last window would otherwise
+    # be scored on post-close data where the arrival rate is an order of magnitude lower.
+    if len(next_times) and next_window.t1 <= min(stream.times[-1], session_end):
         next_history = stream.history(next_window.t0)
         carried = loglik(fit, next_times, next_history, next_window.t0, next_window.t1)
         refit = loglik_refit_baseline(fit, next_times, next_history, next_window.t0, next_window.t1)
