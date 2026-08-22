@@ -7,9 +7,6 @@ data/raw/*.dbn
 # Decoded DBN cache, 1.6 GB, rebuilt on demand by hawkes_fomc.data.load_mbp10
 data/processed/
 
-# Build output of scripts/build_report.py; the template and the script are the source
-report.html
-
 __pycache__/
 *.py[cod]
 .pytest_cache/
