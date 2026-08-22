@@ -1,0 +1,75 @@
+source,fitter,comparison,diff,sign,perm_p
+phase1_rolling_trades_w600,exp_const,statement - morning,0.010212855776485674,1,0.7844607769611519
+phase1_rolling_trades_w600,exp_const,press_conference - morning,0.01896734248287013,1,0.5296235188240588
+phase1_rolling_trades_w600,exp_const,press_conference - statement,0.008754486706384457,1,0.7622618869056547
+phase1_rolling_trades_w600,exp_spline,statement - morning,0.009982107443907207,1,0.8053097345132744
+phase1_rolling_trades_w600,exp_spline,press_conference - morning,0.020348937443052717,1,0.5052747362631869
+phase1_rolling_trades_w600,exp_spline,press_conference - statement,0.01036682999914551,1,0.7501624918754062
+phase1_rolling_trades_w600,mix_const,statement - morning,0.060603151832994806,1,0.2671366431678416
+phase1_rolling_trades_w600,mix_const,press_conference - morning,0.03605628839658692,1,0.3400829958502075
+phase1_rolling_trades_w600,mix_const,press_conference - statement,-0.024546863436407884,-1,0.5491725413729314
+phase1_rolling_trades_w600,mix_spline,statement - morning,-0.005869933584935261,-1,0.9097045147742613
+phase1_rolling_trades_w600,mix_spline,press_conference - morning,0.047657624461528436,1,0.23913804309784512
+phase1_rolling_trades_w600,mix_spline,press_conference - statement,0.0535275580464637,1,0.2112394380280986
+phase2_rolling_trades_w600,neural_const,statement - morning,0.060948313978435475,1,0.25533723313834306
+phase2_rolling_trades_w600,neural_const,press_conference - morning,0.03898581145350888,1,0.3017849107544623
+phase2_rolling_trades_w600,neural_const,press_conference - statement,-0.021962502524926597,-1,0.5740212989350533
+phase2_rolling_trades_w600,neural_mlp,statement - morning,0.007778735890032529,1,0.9033048347582621
+phase2_rolling_trades_w600,neural_mlp,press_conference - morning,0.0034783956551904804,1,0.9457027148642568
+phase2_rolling_trades_w600,neural_mlp,press_conference - statement,-0.004300340234842048,-1,0.9274036298185091
+robustness: merge 0 (identical ts),mix_const [merge 0 (identical ts)],statement - morning,0.060603151832994806,1,0.2760861956902155
+robustness: merge 0 (identical ts),mix_const [merge 0 (identical ts)],press_conference - morning,0.03605628839658692,1,0.3464326783660817
+robustness: merge 0 (identical ts),mix_const [merge 0 (identical ts)],press_conference - statement,-0.024546863436407884,-1,0.543522823858807
+robustness: merge 0 (identical ts),mix_spline [merge 0 (identical ts)],statement - morning,-0.005869933584935261,-1,0.9140042997850107
+robustness: merge 0 (identical ts),mix_spline [merge 0 (identical ts)],press_conference - morning,0.047657624461528436,1,0.23173841307934603
+robustness: merge 0 (identical ts),mix_spline [merge 0 (identical ts)],press_conference - statement,0.0535275580464637,1,0.21213939303034848
+robustness: fastest component 1 ms,mix_const [fastest component 1 ms],statement - morning,0.06007827506382646,1,0.27793610319484024
+robustness: fastest component 1 ms,mix_const [fastest component 1 ms],press_conference - morning,0.03666133770688795,1,0.33008349582520874
+robustness: fastest component 1 ms,mix_const [fastest component 1 ms],press_conference - statement,-0.023416937356938505,-1,0.544522773861307
+robustness: fastest component 1 ms,mix_spline [fastest component 1 ms],statement - morning,-0.0068446096169497705,-1,0.8920553972301385
+robustness: fastest component 1 ms,mix_spline [fastest component 1 ms],press_conference - morning,0.0481558479550277,1,0.23503824808759563
+robustness: fastest component 1 ms,mix_spline [fastest component 1 ms],press_conference - statement,0.05500045757197747,1,0.176041197940103
+robustness: merge within 10 us,mix_const [merge within 10 us],statement - morning,0.05866691112360778,1,0.29233538323083846
+robustness: merge within 10 us,mix_const [merge within 10 us],press_conference - morning,0.036938243911115,1,0.3421828908554572
+robustness: merge within 10 us,mix_const [merge within 10 us],press_conference - statement,-0.02172866721249278,-1,0.5815709214539273
+robustness: merge within 10 us,mix_spline [merge within 10 us],statement - morning,-0.013791710116276445,-1,0.7983600819959003
+robustness: merge within 10 us,mix_spline [merge within 10 us],press_conference - morning,0.046828821484657834,1,0.25498725063746813
+robustness: merge within 10 us,mix_spline [merge within 10 us],press_conference - statement,0.06062053160093428,1,0.15429228538573073
+robustness: merge within 100 us,mix_const [merge within 100 us],statement - morning,0.06551733809797189,1,0.2837858107094645
+robustness: merge within 100 us,mix_const [merge within 100 us],press_conference - morning,0.04645580341080935,1,0.26948652567371634
+robustness: merge within 100 us,mix_const [merge within 100 us],press_conference - statement,-0.01906153468716254,-1,0.6503674816259187
+robustness: merge within 100 us,mix_spline [merge within 100 us],statement - morning,-0.005304379291918071,-1,0.928103594820259
+robustness: merge within 100 us,mix_spline [merge within 100 us],press_conference - morning,0.05293804121585832,1,0.24343782810859457
+robustness: merge within 100 us,mix_spline [merge within 100 us],press_conference - statement,0.05824242050777639,1,0.17929103544822758
+robustness: merge within 1000 us,mix_const [merge within 1000 us],statement - morning,0.07530550267285396,1,0.2462876856157192
+robustness: merge within 1000 us,mix_const [merge within 1000 us],press_conference - morning,0.059573646678194425,1,0.18939053047347632
+robustness: merge within 1000 us,mix_const [merge within 1000 us],press_conference - statement,-0.015731855994659538,-1,0.7772611369431528
+robustness: merge within 1000 us,mix_spline [merge within 1000 us],statement - morning,-0.0015299618250934621,-1,0.9815009249537523
+robustness: merge within 1000 us,mix_spline [merge within 1000 us],press_conference - morning,0.055445574297066424,1,0.28418579071046446
+robustness: merge within 1000 us,mix_spline [merge within 1000 us],press_conference - statement,0.05697553612215989,1,0.26663666816659165
+robustness: sided executions only,mix_const [sided executions only],statement - morning,0.055971840654100324,1,0.34163291835408227
+robustness: sided executions only,mix_const [sided executions only],press_conference - morning,0.028293815171138492,1,0.48287585620718965
+robustness: sided executions only,mix_const [sided executions only],press_conference - statement,-0.027678025482961832,-1,0.5683715814209289
+robustness: sided executions only,mix_spline [sided executions only],statement - morning,0.0020835817068457496,1,0.9704514774261287
+robustness: sided executions only,mix_spline [sided executions only],press_conference - morning,0.029488699429526477,1,0.5145242737863107
+robustness: sided executions only,mix_spline [sided executions only],press_conference - statement,0.027405117722680727,1,0.5903204839758012
+"robustness: rounded to 0.001 s + jitter, seed 0","mix_const [rounded to 0.001 s + jitter, seed 0]",statement - morning,0.060649344338712385,1,0.271986400679966
+"robustness: rounded to 0.001 s + jitter, seed 0","mix_const [rounded to 0.001 s + jitter, seed 0]",press_conference - morning,0.036046366800019825,1,0.34058297085145744
+"robustness: rounded to 0.001 s + jitter, seed 0","mix_const [rounded to 0.001 s + jitter, seed 0]",press_conference - statement,-0.02460297753869256,-1,0.5508724563771812
+"robustness: rounded to 0.001 s + jitter, seed 0","mix_spline [rounded to 0.001 s + jitter, seed 0]",statement - morning,-0.005831414636132015,-1,0.9130543472826359
+"robustness: rounded to 0.001 s + jitter, seed 0","mix_spline [rounded to 0.001 s + jitter, seed 0]",press_conference - morning,0.04751124033666332,1,0.23958802059897005
+"robustness: rounded to 0.001 s + jitter, seed 0","mix_spline [rounded to 0.001 s + jitter, seed 0]",press_conference - statement,0.053342654972795334,1,0.20933953302334884
+"robustness: rounded to 1 s + jitter, seed 0","mix_const [rounded to 1 s + jitter, seed 0]",statement - morning,0.06571327454251052,1,0.2408879556022199
+"robustness: rounded to 1 s + jitter, seed 0","mix_const [rounded to 1 s + jitter, seed 0]",press_conference - morning,0.05721432028087203,1,0.1505424728763562
+"robustness: rounded to 1 s + jitter, seed 0","mix_const [rounded to 1 s + jitter, seed 0]",press_conference - statement,-0.008498954261638492,-1,0.7570121493925304
+"robustness: rounded to 1 s + jitter, seed 0","mix_spline [rounded to 1 s + jitter, seed 0]",statement - morning,0.023806209322839278,1,0.6841657917104145
+"robustness: rounded to 1 s + jitter, seed 0","mix_spline [rounded to 1 s + jitter, seed 0]",press_conference - morning,0.06821677239256385,1,0.11479426028698565
+"robustness: rounded to 1 s + jitter, seed 0","mix_spline [rounded to 1 s + jitter, seed 0]",press_conference - statement,0.04441056306972457,1,0.3806809659517024
+robustness: 20-minute windows,mix_const [20-minute windows],press_conference - morning,0.015114564641678041,1,0.8057597120143993
+robustness: 20-minute windows,mix_spline [20-minute windows],press_conference - morning,0.03407818784913985,1,0.5803209839508024
+robustness: 5-minute windows,mix_const [5-minute windows],statement - morning,-0.03547651904056781,-1,0.47082645867706613
+robustness: 5-minute windows,mix_const [5-minute windows],press_conference - morning,0.01769173312463268,1,0.6123693815309235
+robustness: 5-minute windows,mix_const [5-minute windows],press_conference - statement,0.05316825216520049,1,0.35873206339683017
+robustness: 5-minute windows,mix_spline [5-minute windows],statement - morning,-0.019851032254069922,-1,0.6835658217089146
+robustness: 5-minute windows,mix_spline [5-minute windows],press_conference - morning,-0.013872248298059775,-1,0.704364781760912
+robustness: 5-minute windows,mix_spline [5-minute windows],press_conference - statement,0.0059787839560101474,1,0.903654817259137

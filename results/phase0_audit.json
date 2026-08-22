@@ -1,0 +1,196 @@
+{
+  "file": "xnas-itch-20210128.mbp-10.dbn.zst",
+  "size_bytes": 134745723,
+  "databento_query": {
+    "dataset": "XNAS.ITCH",
+    "schema": "mbp-10",
+    "symbols": [
+      "SPY"
+    ],
+    "stype_in": "raw_symbol",
+    "stype_out": "instrument_id",
+    "start": 1611792000000000000,
+    "end": 1611878400000000000,
+    "limit": null,
+    "encoding": "dbn",
+    "compression": "zstd"
+  },
+  "session_date": "2021-01-28",
+  "fields": [
+    "length",
+    "rtype",
+    "publisher_id",
+    "instrument_id",
+    "ts_event",
+    "price",
+    "size",
+    "action",
+    "side",
+    "flags",
+    "depth",
+    "ts_recv",
+    "ts_in_delta",
+    "sequence",
+    "bid_px_00",
+    "ask_px_00",
+    "bid_sz_00",
+    "ask_sz_00",
+    "bid_ct_00",
+    "ask_ct_00",
+    "bid_px_01",
+    "ask_px_01",
+    "bid_sz_01",
+    "ask_sz_01",
+    "bid_ct_01",
+    "ask_ct_01",
+    "bid_px_02",
+    "ask_px_02",
+    "bid_sz_02",
+    "ask_sz_02",
+    "bid_ct_02",
+    "ask_ct_02",
+    "bid_px_03",
+    "ask_px_03",
+    "bid_sz_03",
+    "ask_sz_03",
+    "bid_ct_03",
+    "ask_ct_03",
+    "bid_px_04",
+    "ask_px_04",
+    "bid_sz_04",
+    "ask_sz_04",
+    "bid_ct_04",
+    "ask_ct_04",
+    "bid_px_05",
+    "ask_px_05",
+    "bid_sz_05",
+    "ask_sz_05",
+    "bid_ct_05",
+    "ask_ct_05",
+    "bid_px_06",
+    "ask_px_06",
+    "bid_sz_06",
+    "ask_sz_06",
+    "bid_ct_06",
+    "ask_ct_06",
+    "bid_px_07",
+    "ask_px_07",
+    "bid_sz_07",
+    "ask_sz_07",
+    "bid_ct_07",
+    "ask_ct_07",
+    "bid_px_08",
+    "ask_px_08",
+    "bid_sz_08",
+    "ask_sz_08",
+    "bid_ct_08",
+    "ask_ct_08",
+    "bid_px_09",
+    "ask_px_09",
+    "bid_sz_09",
+    "ask_sz_09",
+    "bid_ct_09",
+    "ask_ct_09"
+  ],
+  "n_records": 4576851,
+  "publisher_id": [
+    2
+  ],
+  "instrument_id": [
+    8143
+  ],
+  "ts_event_nondecreasing": true,
+  "ts_event_strictly_increasing": false,
+  "ts_event_fraction_on_1us_grid": 0.0010009065184774422,
+  "ts_event_fraction_on_1ms_grid": 8.739633429185263e-07,
+  "ts_event_distinct_sub_us_digits": 1000,
+  "ts_recv_minus_ts_event_ns": {
+    "median": 10260.0,
+    "p99": 30904.0,
+    "max": 111316424873
+  },
+  "first_record_et": "2021-01-28 04:00:00.065534",
+  "last_record_et": "2021-01-28 18:59:59.982356",
+  "utc_offset_hours": -5.0,
+  "marks_et": {
+    "statement": {
+      "clock": "14:00",
+      "seconds_since_et_midnight": 50400.0
+    },
+    "press conference": {
+      "clock": "14:30",
+      "seconds_since_et_midnight": 52200.0
+    }
+  },
+  "regular_session": {
+    "open": "09:30",
+    "close": "16:00",
+    "n_records": 4006587,
+    "first_record_et": "2021-01-28 09:30:00.004197",
+    "last_record_et": "2021-01-28 15:59:59.999998"
+  },
+  "actions": {
+    "A": 2246739,
+    "C": 2216343,
+    "T": 113769
+  },
+  "fomc_statement_day": false,
+  "trades_regular_session": {
+    "executions": 108133,
+    "unique_timestamps": 78020,
+    "max_executions_per_timestamp": 43,
+    "multiplicity_histogram_1_to_10plus": [
+      58971,
+      12755,
+      3945,
+      1349,
+      508,
+      221,
+      102,
+      55,
+      42,
+      72
+    ],
+    "side_counts": {
+      "A": 50532,
+      "B": 45342,
+      "N": 12259
+    },
+    "same_timestamp_groups_with_both_aggressor_sides": 0,
+    "total_shares": 11725382
+  },
+  "trade_events_merge_within_0s": {
+    "n_events": 78020,
+    "interarrival_s": {
+      "min": 3.579989424906671e-07,
+      "p1": 1.841544726630673e-06,
+      "median": 0.03453195999463787,
+      "p99": 2.8989527213813484,
+      "max": 10.070335058997443
+    },
+    "gaps_over_5s": 98
+  },
+  "trade_events_merge_within_1e-05s": {
+    "n_events": 75267,
+    "interarrival_s": {
+      "min": 8.159986464306712e-07,
+      "p1": 1.7611296061659232e-05,
+      "median": 0.043259960497380234,
+      "p99": 2.9365068336021234,
+      "max": 10.070335058997443
+    },
+    "gaps_over_5s": 98
+  },
+  "midprice_changes_regular_session": 633313,
+  "book_update_gaps_regular_session": {
+    "max_s": 0.9013293349999003,
+    "at_et": "2021-01-28 12:52:56.087831",
+    "gaps_over_1s": 0
+  },
+  "trade_events_in_10min_windows": {
+    "09:30-09:40": 2800,
+    "13:55-14:05": 984,
+    "14:25-14:35": 1345,
+    "15:50-16:00": 6265
+  }
+}

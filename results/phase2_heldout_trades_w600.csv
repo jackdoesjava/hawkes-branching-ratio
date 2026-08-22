@@ -1,0 +1,13 @@
+comparison,quantity,windows,mean_diff,se_diff,fraction_positive
+neural_const minus mix_const,heldout_gain_over_poisson_per_event,75,0.0006198201238409107,0.0008210135519706097,0.6533333333333333
+neural_const minus mix_const,heldout_gain_kernel_only_per_event,75,0.0007438036313805944,0.0004714947442670937,0.5733333333333334
+neural_const minus mix_const,gain_over_poisson_per_event,77,0.0012398343756313834,0.00033386602920140593,0.6753246753246753
+neural_mlp minus mix_spline,heldout_gain_over_poisson_per_event,75,-0.0022661506000408787,0.0008625995782064126,0.3333333333333333
+neural_mlp minus mix_spline,heldout_gain_kernel_only_per_event,75,-0.0011623657576176737,0.0006512378746726589,0.4
+neural_mlp minus mix_spline,gain_over_poisson_per_event,77,0.0045635474291652696,0.0006045698489849205,0.8701298701298701
+neural_const minus exp_const,heldout_gain_over_poisson_per_event,75,0.25616994071879196,0.005712671857348413,1.0
+neural_const minus exp_const,heldout_gain_kernel_only_per_event,75,0.24190907695413968,0.00559645664850082,1.0
+neural_const minus exp_const,gain_over_poisson_per_event,77,0.23229028815092126,0.0055593044579791496,1.0
+neural_mlp minus neural_const,heldout_gain_over_poisson_per_event,77,-0.013194782528937968,0.006574866778447399,0.19480519480519481
+neural_mlp minus neural_const,heldout_gain_kernel_only_per_event,77,-0.0024122076361646704,0.0012155082373709704,0.2597402597402597
+neural_mlp minus neural_const,gain_over_poisson_per_event,77,0.0070810705046682465,0.0007268939241418537,0.987012987012987
