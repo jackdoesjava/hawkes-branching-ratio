@@ -43,18 +43,32 @@ def label_periods(table: pd.DataFrame, session: Session) -> pd.DataFrame:
 
 
 def non_overlapping(table: pd.DataFrame) -> pd.DataFrame:
-    """Keep windows whose start is a multiple of the window length, so no two share data."""
-    length = table["t1"] - table["t0"]
-    return table[np.isclose(np.mod(table["t0"] - table["t0"].min(), length), 0.0)]
+    """Keep windows spaced a full window length apart, so no two share data.
+
+    The anchor has to be per window-length: this table concatenates 5-, 10- and 20-minute runs, and
+    measuring every offset from one global minimum t0 silently keeps overlapping windows.
+    """
+    lengths = (table["t1"] - table["t0"]).round(6)
+    keep = pd.Series(False, index=table.index)
+    for length, group in table.groupby(lengths):
+        keep.loc[group.index] = np.isclose(np.mod(group["t0"] - group["t0"].min(), length), 0.0)
+    return table[keep]
 
 
-def permutation_p(x: np.ndarray, y: np.ndarray, rng: np.random.Generator, n_perm: int = 20000) -> float:
+def permutation_p(x: np.ndarray, y: np.ndarray, rng: np.random.Generator | None = None, n_perm: int = 20000) -> float:
+    """Two-sided label-permutation p-value.
+
+    Seeded per call so the result does not depend on how many comparisons ran before it. The
+    tolerance on the comparison matters: with three values a side, a permutation that merely reorders
+    one group differs from the observed statistic only by float rounding, and a bare >= drops it.
+    """
+    rng = np.random.default_rng(SEED) if rng is None else rng
     pooled = np.concatenate([x, y])
-    observed = x.mean() - y.mean()
+    observed = abs(x.mean() - y.mean())
     count = 0
     for _ in range(n_perm):
         rng.shuffle(pooled)
-        count += abs(pooled[: len(x)].mean() - pooled[len(x):].mean()) >= abs(observed)
+        count += abs(pooled[: len(x)].mean() - pooled[len(x):].mean()) >= observed - 1e-12
     return (count + 1) / (n_perm + 1)
 
 
@@ -128,10 +142,6 @@ def load_all(session: Session) -> dict[str, pd.DataFrame]:
             if family == "rounding" and "seed 0" not in variant:
                 continue
             sources[f"robustness: {variant}"] = sub.assign(fitter=sub["fitter"] + f" [{variant}]")
-    archive = RESULTS_DIR / "robustness_rolling_trades_w600_grid1ms.csv"
-    if archive.exists():
-        sub = pd.read_csv(archive)
-        sources["robustness: fastest component 1 ms, bootstrap"] = sub.assign(fitter=sub["fitter"] + " [grid 1 ms]")
     return sources
 
 
