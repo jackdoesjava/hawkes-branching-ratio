@@ -183,7 +183,8 @@ def _maximise_concave(design: np.ndarray, compensator: np.ndarray, theta0: np.nd
     """
     # Column scale: the larger of the mean over events and the mean over time, so a fast component with
     # no close event pairs (all-zero column over events) is not rescaled into absurdity.
-    scale = np.maximum(design.mean(axis=0), compensator / max(design.shape[0], 1))
+    rows = design.shape[0]
+    scale = np.maximum(design.mean(axis=0) if rows else np.zeros(design.shape[1]), compensator / max(rows, 1))
     scale[scale <= 0] = 1.0
     res = optimize.minimize(
         _negloglik, theta0 * scale, args=(design / scale, compensator / scale, offset), jac=True, method="L-BFGS-B",
@@ -253,10 +254,11 @@ def fit_fixed_decays(
 
 
 def default_beta_grid(n: int = 29, fastest: float = 1e-5, slowest: float = 60.0) -> np.ndarray:
-    """Search grid for the single-exponential decay, spanning the same timescales as DEFAULT_TIMESCALES.
+    """Search grid for the single-exponential decay: 10 us to 60 s.
 
-    A grid starting at 1 ms pins the estimate at its own edge on real trade data, where the dominant
-    trade-to-trade lag is tens of microseconds.
+    The fast end matches DEFAULT_TIMESCALES; the slow end runs past it because a single exponential
+    has to stand in for the whole kernel. A grid starting at 1 ms pins the estimate at its own edge on
+    real trade data, where the dominant trade-to-trade lag is tens of microseconds.
     """
     return 1.0 / np.geomspace(fastest, slowest, n)
 
@@ -338,7 +340,7 @@ def gof_tests(intervals: np.ndarray, lags: int = 10) -> dict[str, float]:
     (Lallouache & Challet 2016). The dispersion statistic sqrt(N/8) (s^2 - 1) is N(0,1) under Exp(1).
     """
     n = len(intervals)
-    if n < 3:
+    if n <= lags:  # the Ljung-Box sum divides by n - k, so it needs more points than lags
         return dict.fromkeys(("ks_stat", "ks_p", "lb_stat", "lb_p", "dispersion_z", "dispersion_p"), np.nan)
     ks_stat, ks_p = ks_exp1(intervals)
     centred = intervals - intervals.mean()

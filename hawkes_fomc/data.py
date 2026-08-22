@@ -124,7 +124,7 @@ def trade_events(
         t, side, size = t[keep], side[keep], size[keep]
 
     group = _group_executions(t, side, merge_within)
-    n_groups = int(group[-1]) + 1
+    n_groups = int(group[-1]) + 1 if len(group) else 0
     first = np.ones(len(t), dtype=bool)
     first[1:] = group[1:] != group[:-1]
 
@@ -154,8 +154,12 @@ def midprice_change_events(arr: np.ndarray, session: Session) -> EventStream:
 
 
 def coarsen_times(times: np.ndarray, resolution: float) -> np.ndarray:
-    """Round timestamps down to a grid, reproducing the rounding that Filimonov & Sornette showed biases n."""
-    return np.floor(times / resolution) * resolution
+    """Round timestamps down to a grid, reproducing the rounding that Filimonov & Sornette showed biases n.
+
+    times/resolution is not exact at session-scale magnitudes, so a value already sitting on the grid
+    can floor a whole bin low; the relative nudge is far smaller than a bin and fixes that.
+    """
+    return np.floor(times / resolution * (1 + 8 * np.finfo(float).eps)) * resolution
 
 
 def jitter_times(times: np.ndarray, resolution: float, rng: np.random.Generator) -> np.ndarray:
