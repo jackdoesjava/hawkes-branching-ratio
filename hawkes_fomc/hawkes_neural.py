@@ -196,8 +196,13 @@ def fit_neural(
     steps: int = 800,
     seed: int = 0,
     init_state: dict | None = None,
+    polish: bool = True,
 ) -> NeuralFit:
-    """Maximum-likelihood training with Adam; deterministic for a given seed and thread count."""
+    """Maximum-likelihood training with Adam, then an L-BFGS polish.
+
+    The polish costs about as much as the whole Adam run, so bootstrap refits (which are
+    warm-started and only need a point estimate of n) turn it off.
+    """
     torch.manual_seed(seed)
     model = NeuralHawkes(s_max=s_max, baseline=baseline)
     model.log_rate = math.log(max(len(times), 1) / (t1 - t0))
@@ -217,17 +222,19 @@ def fit_neural(
         optimiser.step()
         scheduler.step()
         history_loss.append(loss.item())
-    # Full-batch problem with ~1e3 parameters: a quasi-Newton polish converges where Adam plateaus.
-    polish = torch.optim.LBFGS(model.parameters(), lr=1.0, max_iter=100, tolerance_grad=1e-9, tolerance_change=1e-12, line_search_fn="strong_wolfe")
-
-    def closure():
-        polish.zero_grad()
-        loss = -log_likelihood(model, w) / scale
-        loss.backward()
-        return loss
-
     before = history_loss[-1] if history_loss else float("inf")
-    polish.step(closure)
+    if polish:
+        # Full-batch problem with ~1e3 parameters, so a quasi-Newton pass converges where Adam plateaus.
+        lbfgs = torch.optim.LBFGS(model.parameters(), lr=1.0, max_iter=100, tolerance_grad=1e-9,
+                                  tolerance_change=1e-12, line_search_fn="strong_wolfe")
+
+        def closure():
+            lbfgs.zero_grad()
+            loss = -log_likelihood(model, w) / scale
+            loss.backward()
+            return loss
+
+        lbfgs.step(closure)
     with torch.no_grad():
         final = float(log_likelihood(model, w))
         converged = bool(np.isfinite(final)) and (-final / scale) <= before + 1e-9
@@ -288,8 +295,18 @@ def rescaled_intervals_neural(fit: NeuralFit, times: np.ndarray, history: np.nda
     return np.diff(np.concatenate([[0.0], comp_mu + comp_kernel]))
 
 
-def simulate_neural(fit: NeuralFit, t_start: float, t_end: float, rng: np.random.Generator) -> np.ndarray:
-    """Cluster simulation from a fitted neural model: mu(t) by thinning, child delays by inverse CDF on the kernel grid."""
+class SimulationTooLarge(RuntimeError):
+    """A replicate whose cascade outgrew the budget; near-critical fits can generate these without bound."""
+
+
+def simulate_neural(fit: NeuralFit, t_start: float, t_end: float, rng: np.random.Generator,
+                    max_events: int | None = None) -> np.ndarray:
+    """Cluster simulation from a fitted neural model: mu(t) by thinning, child delays by inverse CDF on the kernel grid.
+
+    Cost is quadratic in the event count, so a replicate drawn from a fit with n near 1 can be
+    arbitrarily more expensive than the window it came from. `max_events` abandons those instead of
+    letting one bootstrap replicate run for hours; the caller counts how many were abandoned.
+    """
     n = fit.n
     if n >= 1.0:
         raise ValueError("fitted model is supercritical; cannot simulate")
@@ -304,6 +321,7 @@ def simulate_neural(fit: NeuralFit, t_start: float, t_end: float, rng: np.random
     parents = candidates[rng.uniform(0.0, max(mu_max, fit.mu_mean), len(candidates)) < mu(candidates)]
     cdf = fit.big_phi / n
     generations = [parents]
+    total = len(parents)
     while len(parents):
         kids = rng.poisson(n, size=len(parents))
         parent_times = np.repeat(parents, kids)
@@ -311,6 +329,9 @@ def simulate_neural(fit: NeuralFit, t_start: float, t_end: float, rng: np.random
         children = parent_times + delays
         children = children[children < t_end]
         generations.append(children)
+        total += len(children)
+        if max_events is not None and total > max_events:
+            raise SimulationTooLarge(f"{total} events exceeds the budget of {max_events}")
         parents = children
     return np.unique(np.sort(np.concatenate(generations)))
 

@@ -24,7 +24,8 @@ from hawkes_fomc import figures
 from hawkes_fomc.config import DEFAULT_SESSION, RAW_DIR, RESULTS_DIR, SEED, Session
 from hawkes_fomc.data import EventStream, load_mbp10, trade_events
 from hawkes_fomc.hawkes_classical import DEFAULT_BETAS, fit_fixed_decays
-from hawkes_fomc.hawkes_neural import NeuralFit, fit_neural, gof_neural, loglik_neural, simulate_neural
+from hawkes_fomc.hawkes_neural import (NeuralFit, SimulationTooLarge, fit_neural, gof_neural, loglik_neural,
+                                       simulate_neural)
 from hawkes_fomc.simulate import HawkesParams, simulate_hawkes
 from hawkes_fomc.windows import Window, poisson_loglik, rolling_windows
 
@@ -134,16 +135,27 @@ def window_job(args: tuple) -> dict:
         row["heldout_n_events"] = 0
     if n_boot > 0 and fit.n < 1.0:
         rng = np.random.default_rng([SEED, int(window.t0), baseline == "mlp"])
-        boot = []
-        for b in range(n_boot):
-            sim = simulate_neural(fit, window.t0 - 300.0, window.t1, rng)
+        boot, abandoned = [], 0
+        budget = max(3 * max(len(times), 1), 5_000)
+        # A refit costs O(N^2) because every event sums over the previous 60 s, so a fixed number of
+        # replicates would spend hours on the closing windows and seconds on the quiet ones. Replicates
+        # are scaled to hold compute roughly level across the day; boot_n records what each window got.
+        replicates = int(np.clip(n_boot * (1500.0 / max(len(times), 1)) ** 2, 3, n_boot))
+        for b in range(replicates):
+            try:
+                sim = simulate_neural(fit, window.t0 - 300.0, window.t1, rng, max_events=budget)
+            except SimulationTooLarge:
+                abandoned += 1
+                continue
             sim_hist, sim_win = sim[sim < window.t0], sim[sim >= window.t0]
             if len(sim_win) < 10:
                 continue
-            refit_b = fit_neural(sim_win, sim_hist, window.t0, window.t1, baseline, S_MAX, STEPS, SEED + b, init_state=fit.state)
+            refit_b = fit_neural(sim_win, sim_hist, window.t0, window.t1, baseline, S_MAX, STEPS, SEED + b,
+                                 init_state=fit.state, polish=False)
             boot.append(refit_b.n)
         boot = np.array(boot)
-        row.update({"boot_n": len(boot), "boot_mean": boot.mean() if len(boot) else np.nan, "boot_sd": boot.std(ddof=1) if len(boot) > 1 else np.nan,
+        row.update({"boot_n": len(boot), "boot_abandoned": abandoned,
+                    "boot_mean": boot.mean() if len(boot) else np.nan, "boot_sd": boot.std(ddof=1) if len(boot) > 1 else np.nan,
                     "boot_lo": np.percentile(boot, 2.5) if len(boot) else np.nan, "boot_hi": np.percentile(boot, 97.5) if len(boot) else np.nan})
     row["kernel_phi"] = " ".join(f"{v:.4e}" for v in np.interp(np.log(np.geomspace(1e-5, S_MAX, 14)), np.log(fit.grid_s), fit.phi))
     row["mu_grid"] = " ".join(f"{v:.4f}" for v in fit.mu_grid[::100])
@@ -154,10 +166,25 @@ def part_b(stream: EventStream, session: Session, length: float, stride: float, 
     windows = rolling_windows(session.open_s, session.close_s, length, stride)
     jobs = [(stream, w, baseline, n_boot) for baseline in ("const", "mlp") for w in windows]
     started = time.perf_counter()
+    partial = RESULTS_DIR / f"phase2_rolling_{tag}.partial.csv"
+    rows = []
+    # Written window by window: these fits take minutes each, so a crash or an interrupt should not
+    # throw away the whole run, and progress needs to be visible while it happens. A partial file
+    # from an earlier attempt is picked up rather than refitted.
+    if partial.exists():
+        rows = pd.read_csv(partial).to_dict("records")
+        seen = {(r["fitter"], round(r["t0"], 3)) for r in rows}
+        jobs = [j for j in jobs if (f"neural_{j[2]}", round(j[1].t0, 3)) not in seen]
+        print(f"resuming: {len(rows)} windows already done, {len(jobs)} to go", flush=True)
     with ProcessPoolExecutor(initializer=_single_thread) as pool:
-        rows = list(pool.map(window_job, jobs, chunksize=1))
+        for done, row in enumerate(pool.map(window_job, jobs, chunksize=1), start=1):
+            rows.append(row)
+            pd.DataFrame(rows).to_csv(partial, index=False)
+            print(f"  [{done:3d}/{len(jobs)}] {row['fitter']:12s} {session.clock(row['t0'])[:5]} "
+                  f"N={row['n_events']:5d} n={row['n']:.3f} ({row['fit_seconds']:.0f}s)", flush=True)
     table = pd.DataFrame(rows).sort_values(["fitter", "t0"]).reset_index(drop=True)
     table.to_csv(RESULTS_DIR / f"phase2_rolling_{tag}.csv", index=False)
+    partial.unlink(missing_ok=True)
     print(f"{len(table)} neural window fits in {time.perf_counter() - started:.0f}s")
     return table
 
@@ -175,12 +202,13 @@ def heldout_comparison(neural: pd.DataFrame, classical: pd.DataFrame) -> pd.Data
     return pd.DataFrame(rows)
 
 
-def main(stream_name: str, length: float, stride: float, n_boot: int, seeds: int, reuse_fits: bool = False) -> None:
+def main(stream_name: str, length: float, stride: float, n_boot: int, seeds: int, reuse_fits: bool = False,
+         skip_recovery: bool = False) -> None:
     session = DEFAULT_SESSION
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     pd.set_option("display.width", 250, "display.max_rows", 500)
     tag = f"{stream_name}_w{int(length)}"
-    if not reuse_fits:
+    if not reuse_fits and not skip_recovery:
         print("Part A: simulation recovery")
         print(part_a(seeds).round(3).to_string(index=False))
 
@@ -255,11 +283,12 @@ def kernel_figure(neural: pd.DataFrame, classical: pd.DataFrame | None, session:
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--stream", default="trades")
+    p.add_argument("--stream", choices=["trades"], default="trades")
     p.add_argument("--length", type=float, default=600.0)
     p.add_argument("--stride", type=float, default=300.0)
     p.add_argument("--boot", type=int, default=20)
     p.add_argument("--seeds", type=int, default=10)
     p.add_argument("--reuse-fits", action="store_true", help="rebuild the comparison and figures from saved neural fits")
+    p.add_argument("--skip-recovery", action="store_true", help="skip part A when its results are already on disk")
     a = p.parse_args()
-    main(a.stream, a.length, a.stride, a.boot, a.seeds, a.reuse_fits)
+    main(a.stream, a.length, a.stride, a.boot, a.seeds, a.reuse_fits, a.skip_recovery)
